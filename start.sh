@@ -143,7 +143,9 @@ ssh_port_exist_check() {
 
 inotifyWait() {
     chmod +x $cmdPath/main
-    kill -9 $(pidof $cmdPath/main)
+    if [[ ! -z "$(pidof $cmdPath/main)" ]]; then
+        kill -9 $(pidof $cmdPath/main)
+    fi    
     $cmdPath/main &>> $cmdPath/log/fileChange.log &
 }
 
