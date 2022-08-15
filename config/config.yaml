@@ -12,7 +12,6 @@ from: 1359816810@qq.com
 # 接收邮件的账号  
 to:
   - 1146923069@qq.com
-  - 1359816810@qq.com
 smtp: smtp.qq.com
 smtpPort: 465
 smtpAuthUser: 1359816810@qq.com
