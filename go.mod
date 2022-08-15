@@ -1,10 +1,10 @@
-module test
+module security
 
 go 1.17
 
-require github.com/fsnotify/fsnotify v1.5.4
-
 require (
+	github.com/fatedier/beego v1.7.2
+	github.com/fsnotify/fsnotify v1.5.4
 	github.com/spf13/viper v1.12.0
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
