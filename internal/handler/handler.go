@@ -29,7 +29,7 @@ func Handier() {
 						continue
 					}
 					// 当为文件创建时
-					log.Warn(ev.Name+" %s ", "created!!!")
+					log.Warn(ev.Name+" %s ", "created")
 					// 判断是否是文件夹
 					info, err := os.Stat(ev.Name)
 					if err != nil {

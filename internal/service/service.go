@@ -115,24 +115,16 @@ func (w *Watch) send(to string) {
 }
 
 func (w *Watch) Screen(name string) bool {
-	n := strings.Contains(name, ".swp")
-	if n {
-		return true
-	}
-	n = strings.Contains(name, ".swx")
-	if n {
-		return true
-	}
-	n = strings.Contains(name, "~")
-	if n {
-		return true
-	}
-	n = strings.Contains(name, "4913")
-	if n {
-		return true
+	// 屏蔽的文件关键字
+	screen := []string{".swp", ".swx", "~", "4913"}
+	for _, v := range screen {
+		n := strings.Contains(name, v)
+		if n {
+			return true
+		}
 	}
 	for _, v := range w.noWatchDir {
-		n = strings.Contains(name, v)
+		n := strings.Contains(name, v)
 		if n {
 			return true
 		}
