@@ -1,0 +1,21 @@
+# 要监控的文件路径
+watchDir:
+  - /etc/nginx
+  - /root/test
+# 不要监控的文件路径
+noWatchDir:
+  - /etc/nginx/conf.d/test.html
+  - /etc/nginx/conf.d/index..html
+timer: 1
+# 发送邮件的账号  
+from: 1359816810@qq.com
+# 接收邮件的账号  
+to:
+  - 1146923069@qq.com
+  - 1359816810@qq.com
+smtp: smtp.qq.com
+smtpPort: 465
+smtpAuthUser: 1359816810@qq.com
+smtpAuthPassword: gkrpuodmspuvjiad
+# 文件的主题
+subject: "监控的文件被修改了"
