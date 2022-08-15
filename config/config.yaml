@@ -5,7 +5,7 @@ watchDir:
 # 不要监控的文件路径
 noWatchDir:
   - /etc/nginx/conf.d/test.html
-  - /etc/nginx/conf.d/index..html
+  - /etc/nginx/conf.d/index.html
 timer: 1
 # 发送邮件的账号  
 from: 1359816810@qq.com
