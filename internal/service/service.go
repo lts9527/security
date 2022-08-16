@@ -70,12 +70,14 @@ func NewWatch() *Watch {
 	}
 }
 
+// BatchAdd 批量添加要监控的路径
 func (w *Watch) BatchAdd() {
 	for _, v := range w.WatchFile.watchDir {
 		w.Add(v)
 	}
 }
 
+// Add添加要监控的路径
 func (w *Watch) Add(watchDir string) error {
 	// 遍历当前文件夹下的目录，将所有的目录添加但监听列表
 	err := filepath.Walk(watchDir, func(path string, info os.FileInfo, err error) error {
@@ -91,6 +93,7 @@ func (w *Watch) Add(watchDir string) error {
 	return nil
 }
 
+// BatchDelete 批量添加不监控的路径
 func (w *Watch) BatchDelete() {
 	for _, v := range w.WatchFile.noWatchDir {
 		err := w.Delete(v)
@@ -100,6 +103,7 @@ func (w *Watch) BatchDelete() {
 	}
 }
 
+// Delete 添加不监控的路径
 func (w *Watch) Delete(watchDir string) error {
 	err := w.Watcher.Remove(watchDir)
 	if err != nil {
@@ -108,6 +112,7 @@ func (w *Watch) Delete(watchDir string) error {
 	return nil
 }
 
+// BatchSend 给多个邮箱发送信息
 func (w *Watch) BatchSend() {
 	for _, v := range w.WatchFile.MsgArray {
 		w.WatchFile.Msg += v + "\n" + "<br>"
@@ -117,6 +122,31 @@ func (w *Watch) BatchSend() {
 	}
 }
 
+func (w *Watch) send(to, msg, subject string) {
+	m := gomail.NewMessage()
+	//发送人
+	m.SetHeader("From", w.from)
+	//接收人
+	m.SetHeader("To", to)
+	//抄送人
+	//m.SetAddressHeader("Cc", "xxx@qq.com", "xiaozhujiao")
+	//主题
+	m.SetHeader("Subject", subject)
+	//内容
+	m.SetBody("text/html", msg)
+	//附件
+	//m.Attach("./myIpPic.png")
+	//拿到token，并进行连接,第4个参数是填授权码
+	d := gomail.NewDialer(w.smtp, w.smtpPort, w.from, w.smtpAuthPassword)
+	// 发送邮件
+	if err := d.DialAndSend(m); err != nil {
+		log.Error("DialAndSend err %v:", err)
+		return
+	}
+	log.Info("send mail success")
+}
+
+// Screen 过滤文件，忽略包含这些关键字的文件
 func (w *Watch) Screen(name string) bool {
 	// 屏蔽的文件关键字
 	screen := []string{".swp", ".swx", "~", "4913"}
@@ -135,6 +165,7 @@ func (w *Watch) Screen(name string) bool {
 	return false
 }
 
+// 执行ssh登录提醒和报警
 func (w *Watch) StartWatchSSH() {
 	if viper.GetBool("watchSSH.enablementSSH") {
 		err := w.cmdWatchSSH(w.WatchSSH.CmdStrLogin, viper.GetString("watchSSH.loginSubject"))
@@ -183,28 +214,4 @@ func (w *Watch) Close() {
 	if err != nil {
 		log.Error(err.Error())
 	}
-}
-
-func (w *Watch) send(to, msg, subject string) {
-	m := gomail.NewMessage()
-	//发送人
-	m.SetHeader("From", w.from)
-	//接收人
-	m.SetHeader("To", to)
-	//抄送人
-	//m.SetAddressHeader("Cc", "xxx@qq.com", "xiaozhujiao")
-	//主题
-	m.SetHeader("Subject", subject)
-	//内容
-	m.SetBody("text/html", msg)
-	//附件
-	//m.Attach("./myIpPic.png")
-	//拿到token，并进行连接,第4个参数是填授权码
-	d := gomail.NewDialer(w.smtp, w.smtpPort, w.from, w.smtpAuthPassword)
-	// 发送邮件
-	if err := d.DialAndSend(m); err != nil {
-		log.Error("DialAndSend err %v:", err)
-		return
-	}
-	log.Info("send mail success")
 }
