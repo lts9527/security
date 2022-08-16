@@ -8,6 +8,7 @@ Font="\033[0m"
 
 #notification information
 OK="${Green}[OK]${Font}"
+MSG="${Green}程序已启动${Font}"
 Error="${Red}[错误]${Font}"
 
 cmdPath=`pwd`
@@ -145,13 +146,16 @@ inotifyWait() {
     chmod +x $cmdPath/main
     if [[ ! -z "$(pidof $cmdPath/main)" ]]; then
         kill -9 $(pidof $cmdPath/main)
-    fi    
+    fi
+    sed -i "s/enablementFile: false/enablementFile: true/g" $cmdPath/config/config.yaml    
     $cmdPath/main &>> $cmdPath/log/fileChange.log &
+    echo -e ${MSG}
 }
 
  sshHoneypot() {
     ssh_port_exist_check 22
-    if [0 -eq docker ps |grep hfish |wc -l];then
+    a=1
+    if [ $a -eq `docker ps |grep hfish |wc -l` ];then
         echo -e "${Error} ${RedBG} 检测到目前蜜罐程序已安装，是否卸载重装？（Y/n）${Font}"
         read -r uninstall_install
         [[ -z ${uninstall_install} ]] && uninstall_install="Y"
@@ -170,7 +174,7 @@ inotifyWait() {
     docker exec -it hfish sh -c "cp /opt/HFish/config.ini /opt/HFish/config.ini.bak"   
     docker exec -it hfish sh -c "sed -i '9s/.*/password = $passwd1/' /opt/HFish/config.ini"
     docker restart hfish
-    if [0 -eq docker ps |grep hfish |wc -l];then
+    if [ $a -eq `docker ps |grep hfish |wc -l` ];then
         echo -e "ssh蜜罐程序部署成功，请访问ip:9001进行管理"
         echo -e "账号：admin"
         echo -e "密码：$passwd1"
@@ -204,40 +208,33 @@ inotifyWait() {
     fi
  }
 
-        if [[ "${ID}" == "ubuntu" ]] ||  [[ "${ID}" == "debian" ]];then
-            echo "*/1 * * * * /bin/bash $cmdPath/.inotifyWaitDetection.sh" >>/var/spool/cron/crontabs/root
-        elif [[ "${ID}" == "centos" ]];then
-            echo "*/1 * * * * /bin/bash $cmdPath/.inotifyWaitDetection.sh" >>/var/spool/cron/root
-        else
-            echo -e "${Error} ${RedBG} 当前系统为 ${ID} ${VERSION_ID} 不在支持的系统列表内，安装中断 ${Font}"
-            exit 1
-        fi
+if [[ "${ID}" == "ubuntu" ]] ||  [[ "${ID}" == "debian" ]];then
+    echo "*/1 * * * * /bin/bash $cmdPath/.inotifyWaitDetection.sh" >>/var/spool/cron/crontabs/root
+elif [[ "${ID}" == "centos" ]];then
+    echo "*/1 * * * * /bin/bash $cmdPath/.inotifyWaitDetection.sh" >>/var/spool/cron/root
+else
+    echo -e "${Error} ${RedBG} 当前系统为 ${ID} ${VERSION_ID} 不在支持的系统列表内，安装中断 ${Font}"
+    exit 1
+fi
 
- sshLoginLog() {
-    if [[ "${ID}" = "centos" && ${VERSION_ID} -ge 7 ]]; then
-        tail -f /var/log/secure | grep 'Accepted'| grep -Po '(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|[1-9])(\.(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|\d)){3}' &> $cmdPath/log/sshLogin.ip &
-    elif [[ "${ID}" = "debian" && ${VERSION_ID} -ge 8 ]]; then
-        tail -f /var/log/auth.log | grep 'Accepted'| grep -Po '(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|[1-9])(\.(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|\d)){3}' &> $cmdPath/log/sshLogin.ip &
-    elif [[ "${ID}" = "ubuntu" && $(echo "${VERSION_ID}" | cut -d '.' -f1) -ge 16 ]]; then
-        tail -f /var/log/auth.log | grep 'Accepted'| grep -Po '(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|[1-9])(\.(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|\d)){3}' &> $cmdPath/log/sshLogin.ip &
+watchSSH() {
+    if [[ "${ID}" = "centos" ]]; then
+        sed -i "s#watchDir: placeholder#watchDirSSH: /var/log/secure#g" $cmdPath/config/config.yaml
+    elif [[ "${ID}" = "debian" ]]; then
+        sed -i "s#watchDir: placeholder#watchDirSSH: /var/log/auth.log#g" $cmdPath/config/config.yaml
+    elif [[ "${ID}" = "ubuntu" ]]; then
+        sed -i "s#watchDir: placeholder#watchDirSSH: /var/log/auth.log#g" $cmdPath/config/config.yaml
     else
         echo -e "${Error} ${RedBG} 当前系统为 ${ID} ${VERSION_ID} 不在支持的系统列表内，安装中断 ${Font}"
         exit 1
     fi
- }
-
- sshBoomLog() {
-    if [[ "${ID}" = "centos" && ${VERSION_ID} -ge 7 ]]; then
-        tail -f /var/log/secure |  grep -B1 'Too many authentication failures' | grep -Po '(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|[1-9])(\.(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|\d)){3}' &> $cmdPath/log/sshBoom.ip &
-    elif [[ "${ID}" = "debian" && ${VERSION_ID} -ge 8 ]]; then
-        tail -f /var/log/auth.log |  grep -B1 'Too many authentication failures' | grep -Po '(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|[1-9])(\.(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|\d)){3}' &> $cmdPath/log/sshBoom.ip &
-    elif [[ "${ID}" = "ubuntu" && $(echo "${VERSION_ID}" | cut -d '.' -f1) -ge 16 ]]; then
-        tail -f /var/log/auth.log |  grep -B1 'Too many authentication failures' | grep -Po '(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|[1-9])(\.(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|\d)){3}' &> $cmdPath/log/sshBoom.ip &
-    else
-        echo -e "${Error} ${RedBG} 当前系统为 ${ID} ${VERSION_ID} 不在支持的系统列表内，安装中断 ${Font}"
-        exit 1
+    if [[ ! -z "$(pidof $cmdPath/main)" ]]; then
+        kill -9 $(pidof $cmdPath/main)
     fi
- }
+    sed -i "s/enablementSSH: false/enablementSSH: true/g" $cmdPath/config/config.yaml
+    $cmdPath/main &>> $cmdPath/log/fileChange.log &
+    echo -e ${MSG}
+}
 
 show_menu() {
     echo -e "—————————— 安装向导 ——————————"
@@ -271,8 +268,7 @@ show_menu() {
             ;;
         D)
             is_root
-            sshLoginLog
-            sshBoomLog
+            watchSSH
             ;;  
         E)
             is_root
@@ -286,4 +282,3 @@ show_menu() {
 }
 
 show_menu
-
