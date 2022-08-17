@@ -150,6 +150,8 @@ inotifyWait() {
     sed -i "s/enablementFile: false/enablementFile: true/g" $cmdPath/config/config.yaml    
     $cmdPath/main &>> $cmdPath/log/fileChange.log &
     echo -e ${MSG}
+    echo ""
+    show_menu
 }
 
  sshHoneypot() {
@@ -219,11 +221,11 @@ fi
 
 watchSSH() {
     if [[ "${ID}" = "centos" ]]; then
-        sed -i "s#watchDir: placeholder#watchDirSSH: /var/log/secure#g" $cmdPath/config/config.yaml
+        sed -i "s#watchDirSSH: placeholder#watchDirSSH: /var/log/secure#g" $cmdPath/config/config.yaml
     elif [[ "${ID}" = "debian" ]]; then
-        sed -i "s#watchDir: placeholder#watchDirSSH: /var/log/auth.log#g" $cmdPath/config/config.yaml
+        sed -i "s#watchDirSSH: placeholder#watchDirSSH: /var/log/auth.log#g" $cmdPath/config/config.yaml
     elif [[ "${ID}" = "ubuntu" ]]; then
-        sed -i "s#watchDir: placeholder#watchDirSSH: /var/log/auth.log#g" $cmdPath/config/config.yaml
+        sed -i "s#watchDirSSH: placeholder#watchDirSSH: /var/log/auth.log#g" $cmdPath/config/config.yaml
     else
         echo -e "${Error} ${RedBG} 当前系统为 ${ID} ${VERSION_ID} 不在支持的系统列表内，安装中断 ${Font}"
         exit 1
@@ -234,6 +236,8 @@ watchSSH() {
     sed -i "s/enablementSSH: false/enablementSSH: true/g" $cmdPath/config/config.yaml
     $cmdPath/main &>> $cmdPath/log/fileChange.log &
     echo -e ${MSG}
+    echo ""
+    show_menu
 }
 
 show_menu() {

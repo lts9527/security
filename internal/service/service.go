@@ -73,7 +73,9 @@ func NewWatch() *Watch {
 // BatchAdd 批量添加要监控的路径
 func (w *Watch) BatchAdd() {
 	for _, v := range w.WatchFile.watchDir {
-		w.Add(v)
+		if err := w.Add(v); err != nil {
+			log.Error(err.Error())
+		}
 	}
 }
 
@@ -96,8 +98,7 @@ func (w *Watch) Add(watchDir string) error {
 // BatchDelete 批量添加不监控的路径
 func (w *Watch) BatchDelete() {
 	for _, v := range w.WatchFile.noWatchDir {
-		err := w.Delete(v)
-		if err != nil {
+		if err := w.Delete(v); err != nil {
 			log.Error(err.Error())
 		}
 	}
@@ -105,7 +106,14 @@ func (w *Watch) BatchDelete() {
 
 // Delete 添加不监控的路径
 func (w *Watch) Delete(watchDir string) error {
-	err := w.Watcher.Remove(watchDir)
+	// 遍历当前文件夹下的目录，将所有的目录添加但监听列表
+	err := filepath.Walk(watchDir, func(path string, info os.FileInfo, err error) error {
+		err = w.Watcher.Remove(path)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		return err
 	}
@@ -149,7 +157,7 @@ func (w *Watch) send(to, msg, subject string) {
 // Screen 过滤文件，忽略包含这些关键字的文件
 func (w *Watch) Screen(name string) bool {
 	// 屏蔽的文件关键字
-	screen := []string{".swp", ".swx", "~", "4913"}
+	screen := []string{".swp", ".swx", "~", "4913", "swo"}
 	for _, v := range screen {
 		n := strings.Contains(name, v)
 		if n {

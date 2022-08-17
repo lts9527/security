@@ -1,23 +1,23 @@
-# 要监控的文件路径
 watchFile:
   # 是否打开监控文件功能
-  enablementFile: true
-  # 监控的文件路径
+  enablementFile: false
+  # 监控的文件路径或文件
   watchDir:
-    - /etc/nginx
-    #- /root/test
-  # 不要监控的文件路径
+    - /etc/nginx/
+    #- /root/test/
+  # 不监控的文件路径或文件
   noWatchDir:
-    - /etc/nginx/conf.d/test.html
-    - /etc/nginx/conf.d/index.html
+    #- /root/test/main.go
+    - /etc/nginx/conf.d/
+  # 发送邮件间隔  
   timer: 1
   # 发送邮件的主题
   subject: "文件监控报警"
 
 watchSSH:
   # 是否打开监控SSH功能
-  enablementSSH: true
-  watchDirSSH: /var/log/secure
+  enablementSSH: false
+  watchDirSSH: placeholder
   # 发送邮件的主题
   loginSubject: "SSH登录提醒"
   warningSubject: "SSH警告"
